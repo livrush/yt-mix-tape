@@ -1,0 +1,16 @@
+{
+  "name": "yt-mp3",
+  "version": "1.0.0",
+  "scripts": {
+    "client": "cd client && yarn start",
+    "server": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "ytdl-core": "^0.20.1"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.0"
+  }
+}
