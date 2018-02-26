@@ -6,7 +6,7 @@ const {
   parseVideoInfo,
   makeVideoName,
   downloadVideo,
-  ripAudioFromVideo,
+  ripFullAudioFromVideo,
 } = require('./helpers');
 
 const app = express();
@@ -23,11 +23,20 @@ app.get('/api/download', (req, res) => {
   const args = {
     fileName: req.headers.filename,
     url: req.headers.url,
+    splits: req.headers.splits,
   };
 
-  makeVideoName(args)
-    .then(downloadVideo)
-    .then(ripAudioFromVideo);
+  if (args.splits.length) {
+    makeVideoName(args)
+      .then(downloadVideo)
+      .then(ripFullAudioFromVideo)
+      .then(() => res.send('complete'));
+  } else {
+    makeVideoName(args)
+      .then(downloadVideo)
+      .then(ripFullAudioFromVideo)
+      .then(() => res.send('complete'));
+  }
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));

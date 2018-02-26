@@ -1,4 +1,5 @@
-const ffmpeg = require('ffmpeg');
+// const ffmpeg = require('ffmpeg');
+const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const moment = require('moment');
 const os = require('os')
@@ -10,6 +11,7 @@ const pathPrefix = `${homeDir}/Documents/yt-mp3-exports`;
 const getVideoInfo = url => ytdl.getInfo(url);
 
 const makeVideoName = args => {
+  console.log('makeVideoName');
   return new Promise((res, rej) => {
     args.fileName = `${pathPrefix}/${args.fileName.replace(/\s/g, '-')}`;
     res(args);
@@ -17,6 +19,7 @@ const makeVideoName = args => {
 }
 
 const downloadVideo = args => {
+  console.log('downloadVideo');
   const { fileName, url } = args;
   return new Promise((res, rej) => {
     const download = ytdl(url);
@@ -27,19 +30,63 @@ const downloadVideo = args => {
   });
 };
 
-const ripAudioFromVideo = args => {
+const ripFullAudioFromVideo = args => {
+  console.log('ripAudioFromVideo');
   console.log('rip audio from video', args);
   const { fileName } = args;
   return new Promise((res) => {
-    var process = new ffmpeg(`${fileName}.flv`);
-    process.then((video) => {
-      video.fnExtractSoundToMP3(`${fileName}.mp3`, function (error, file) {
-        if (error) throw new Error(error);
-      });
-      res(args);
-    });
+    new ffmpeg(`${fileName}.flv`)
+      .output(`${fileName}.mp3`)
+      .on('progress', function(progress) {
+        console.log('Processing: ' + progress.percent + '% done');
+      })
+      .on('end', function() {
+        console.log('Finished processing');
+        res(args);
+      })
+      .run();
   });
 }
+
+const cropAudioFromVideo = args => {
+  console.log('ripAudioFromVideo');
+  console.log('rip audio from video', args);
+  const { fileName } = args;
+  return new Promise((res) => {
+    new ffmpeg(`${fileName}.flv`)
+      .seekInput('2:14.500')
+      .duration(3)
+      .output(`${fileName}.mp3`)
+      .on('progress', function(progress) {
+        console.log('Processing: ' + progress.percent + '% done');
+      })
+      .on('end', function() {
+        console.log('Finished processing');
+        res(args);
+      })
+      .run();
+    // process.then((video) => {
+    //   video.fnExtractSoundToMP3(`${fileName}.mp3`, function (error, file) {
+    //     if (error) throw new Error(error);
+    //   });
+    //   res(args);
+    // });
+  });
+}
+
+// const ripAudioFromVideo = args => {
+//   console.log('rip audio from video', args);
+//   const { fileName } = args;
+//   return new Promise((res) => {
+//     var process = new ffmpeg(`${fileName}.flv`);
+//     process.then((video) => {
+//       video.fnExtractSoundToMP3(`${fileName}.mp3`, function (error, file) {
+//         if (error) throw new Error(error);
+//       });
+//       res(args);
+//     });
+//   });
+// }
 
 const parseVideoInfo = videoInfo => {
   return new Promise(res => {
@@ -64,5 +111,5 @@ module.exports = {
   parseVideoInfo,
   makeVideoName,
   downloadVideo,
-  ripAudioFromVideo,
+  ripFullAudioFromVideo,
 };
