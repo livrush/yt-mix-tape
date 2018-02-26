@@ -11,7 +11,7 @@ const getVideoInfo = url => ytdl.getInfo(url);
 
 const makeVideoName = args => {
   return new Promise((res, rej) => {
-    args.fileName = `${pathPrefix}/${args.fileName}`;
+    args.fileName = `${pathPrefix}/${args.fileName.replace(/\s/g, '-')}`;
     res(args);
   });
 }
@@ -34,7 +34,7 @@ const ripAudioFromVideo = args => {
     var process = new ffmpeg(`${fileName}.flv`);
     process.then((video) => {
       video.fnExtractSoundToMP3(`${fileName}.mp3`, function (error, file) {
-        if (error) throw new error(error);
+        if (error) throw new Error(error);
       });
       res(args);
     });
