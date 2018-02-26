@@ -7,21 +7,16 @@ const ytdl = require('ytdl-core');
 const homeDir = os.homedir();
 const pathPrefix = `${homeDir}/Documents/yt-mp3-exports`;
 
-const getVideoInfo = (url) => {
-  console.log(url);
-  return ytdl.getInfo(url);
-};
+const getVideoInfo = url => ytdl.getInfo(url);
 
-const makeVideoName = (args) => {
-  console.log('make video name', args);
+const makeVideoName = args => {
   return new Promise((res, rej) => {
     args.fileName = `${pathPrefix}/${args.fileName}`;
     res(args);
   });
 }
 
-const downloadVideo = (args) => {
-  console.log('download video', args);
+const downloadVideo = args => {
   const { fileName, url } = args;
   return new Promise((res, rej) => {
     const download = ytdl(url);
@@ -32,18 +27,21 @@ const downloadVideo = (args) => {
   });
 };
 
-function ripAudioFromVideo(filePath, filesInfo) {
-  var process = new ffmpeg(filePath);
-  process.then((video) => {
-    video.fnExtractSoundToMP3('test.mp3', function (error, file) {
-      if (error) throw new error(error);
+const ripAudioFromVideo = args => {
+  console.log('rip audio from video', args);
+  const { fileName } = args;
+  return new Promise((res) => {
+    var process = new ffmpeg(`${fileName}.flv`);
+    process.then((video) => {
+      video.fnExtractSoundToMP3(`${fileName}.mp3`, function (error, file) {
+        if (error) throw new error(error);
+      });
+      res(args);
     });
-  }, function (err) {
-    console.log('Error: ' + err);
   });
 }
 
-function parseVideoInfo(videoInfo) {
+const parseVideoInfo = videoInfo => {
   return new Promise(res => {
     const parsedInfo = {
       author: videoInfo.author,
@@ -57,11 +55,9 @@ function parseVideoInfo(videoInfo) {
     } else {
       parsedInfo.length = moment.utc(videoInfo.length_seconds * 1000).format('hh:mm:ss');
     }
-    console.log(parsedInfo);
     res(parsedInfo);
   });
 }
-
 
 module.exports = {
   getVideoInfo,

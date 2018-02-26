@@ -29,7 +29,8 @@ app.get('/api/download', (req, res) => {
   };
 
   makeVideoName(args)
-    .then(downloadVideo);
+    .then(downloadVideo)
+    .then(ripAudioFromVideo);
   // const url = req.headers.url;
   // const fileName = req.headers.fileName;
   // const fullFileName = `${pathPrefix}/${fileName}`;
