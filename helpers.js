@@ -1,16 +1,40 @@
 const ffmpeg = require('ffmpeg');
 const fs = require('fs');
 const moment = require('moment');
+const os = require('os')
 const ytdl = require('ytdl-core');
 
+const homeDir = os.homedir();
+const pathPrefix = `${homeDir}/Documents/yt-mp3-exports`;
+
+const getVideoInfo = (url) => {
+  console.log(url);
+  return ytdl.getInfo(url);
+};
+
+const makeVideoName = (args) => {
+  console.log('make video name', args);
+  return new Promise((res, rej) => {
+    args.fileName = `${pathPrefix}/${args.fileName}`;
+    res(args);
+  });
+}
+
+const downloadVideo = (args) => {
+  console.log('download video', args);
+  const { fileName, url } = args;
+  return new Promise((res, rej) => {
+    const download = ytdl(url);
+    download.pipe(fs.createWriteStream(`${fileName}.flv`));
+    download.on('end', () => {
+      res(args);
+    });
+  });
+};
 
 function ripAudioFromVideo(filePath, filesInfo) {
-  console.log('made it');
   var process = new ffmpeg(filePath);
-  console.log('process');
-  process.then(function (video) {
-    // Callback mode
-    console.log('then');
+  process.then((video) => {
     video.fnExtractSoundToMP3('test.mp3', function (error, file) {
       if (error) throw new error(error);
     });
@@ -19,23 +43,8 @@ function ripAudioFromVideo(filePath, filesInfo) {
   });
 }
 
-const getVideoInfo = (url) => {
-  console.log(url);
-  return ytdl.getInfo(url);
-};
-
-const downloadVideo = (url) => {
-  return new Promise((res, rej) => {
-    const download = ytdl(url);
-    download.pipe(fs.createWriteStream(fullFileName));
-    download.on('end', () => {
-      res(fullfileName)
-    });
-  });
-};
-
 function parseVideoInfo(videoInfo) {
-  return new Promise((res, rej) => {
+  return new Promise(res => {
     const parsedInfo = {
       author: videoInfo.author,
       description: videoInfo.description,
@@ -50,13 +59,14 @@ function parseVideoInfo(videoInfo) {
     }
     console.log(parsedInfo);
     res(parsedInfo);
-    rej(videoInfo);
   });
 }
 
 
 module.exports = {
-  ripAudioFromVideo,
   getVideoInfo,
   parseVideoInfo,
+  makeVideoName,
+  downloadVideo,
+  ripAudioFromVideo,
 };
