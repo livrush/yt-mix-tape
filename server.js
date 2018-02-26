@@ -1,8 +1,5 @@
 const express = require('express');
-const fs = require('fs');
-const moment = require('moment');
 const port = process.env.PORT || 5000;
-const ytdl = require('ytdl-core');
 
 const {
   getVideoInfo,
