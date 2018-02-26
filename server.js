@@ -16,7 +16,7 @@ const app = express();
 
 app.get('/api/info', (req, res) => {
   const url = req.headers.url;
-  console.log(url);
+
   getVideoInfo(url)
     .then(parseVideoInfo)
     .then((info) => res.send(info));
@@ -24,22 +24,13 @@ app.get('/api/info', (req, res) => {
 
 app.get('/api/download', (req, res) => {
   const args = {
-    fileName: req.headers.fileName,
+    fileName: req.headers.filename,
     url: req.headers.url,
   };
 
   makeVideoName(args)
     .then(downloadVideo)
     .then(ripAudioFromVideo);
-  // const url = req.headers.url;
-  // const fileName = req.headers.fileName;
-  // const fullFileName = `${pathPrefix}/${fileName}`;
-  // const download = ytdl(url);
-  // download.pipe(fs.createWriteStream(`${fullFileName}.flv`));
-  // download.on('end', () => {
-  //   ripAudioFromVideo(fullFileName);
-  //   res.send(true);
-  // });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
