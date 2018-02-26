@@ -5,20 +5,18 @@ const port = process.env.PORT || 5000;
 const ytdl = require('ytdl-core');
 const moment = require('moment');
 const fs = require('fs');
-const { ripAudioFromVideo } = require('./videoManipulation');
+const {
+  ripAudioFromVideo,
+  getVideoInfo,
+  parseVideoInfo,
+} = require('./helpers');
 
 app.get('/api/info', (req, res) => {
   const url = req.headers.url;
-
-  ytdl.getInfo(url)
-    .then((info) => {
-      const parsedInfo = parseVideoInfo(info);
-      res.send(parsedInfo);
-    })
-    .then((err) => {
-      console.error(err);
-      res.send(error);
-    });
+  console.log(url);
+  getVideoInfo(url)
+    .then(parseVideoInfo)
+    .then((info) => res.send(info));
 });
 
 app.get('/api/download', (req, res) => {
@@ -37,15 +35,20 @@ app.get('/api/download', (req, res) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
-function parseVideoInfo(videoInfo) {
-  const parsedInfo = {
-    author: videoInfo.author,
-    description: videoInfo.description,
-    thumbnail_url: videoInfo.thumbnail_url,
-    title: videoInfo.title,
-    video_url: videoInfo.video_url,
-  };
-  parsedInfo.length = moment.utc(videoInfo.length_seconds * 1000).format('mm:ss');
+// function parseVideoInfo(videoInfo) {
+//   const parsedInfo = {
+//     author: videoInfo.author,
+//     description: videoInfo.description,
+//     thumbnail_url: videoInfo.thumbnail_url,
+//     title: videoInfo.title,
+//     video_url: videoInfo.video_url,
+//   };
 
-  return parsedInfo;
-}
+//   if (videoInfo.length_seconds < 3600) {
+//     parsedInfo.length = moment.utc(videoInfo.length_seconds * 1000).format('mm:ss');
+//   } else {
+//     parsedInfo.length = moment.utc(videoInfo.length_seconds * 1000).format('hh:mm:ss');
+//   }
+
+//   return parsedInfo;
+// }
