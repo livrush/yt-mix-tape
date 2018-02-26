@@ -4,6 +4,8 @@ import './App.css';
 import URLInput from './URLInput/URLInput';
 import VideoList from './VideoList/VideoList';
 import VideoCard from './VideoCard/VideoCard';
+import AudioSplitList from './AudioSplit/AudioSplitList';
+// import AudioSplit from './AudioSplit/AudioSplit';
 import DownloadButton from './DownloadButton/DownloadButton';
 import { makeId } from './helpers.js';
 import axios from 'axios';
@@ -12,63 +14,136 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
+      fileName: '',
       videoUrl: 'https://www.youtube.com/watch?v=r2tmnzPOnQg',
       video: {},
-      list: [],
+      videosList: [],
+      audioSplitsList: [],
     };
     this.onDownloadButtonClick = this.onDownloadButtonClick.bind(this);
     this.onAddUrl = this.onAddUrl.bind(this);
+    this.updateFileName = this.updateFileName.bind(this);
+    this.getVideoInfo = this.getVideoInfo.bind(this);
+    this.onAddAudioSplit = this.onAddAudioSplit.bind(this);
+    this.onDeleteAudioSplit = this.onDeleteAudioSplit.bind(this);
   }
 
   componentWillMount() {
-    this.setState({ list: this.state.list.concat(<URLInput onAdd={this.onAddUrl} key={makeId()}></URLInput>)});
+    this.setState({
+      videosList: this.state.videosList.concat(<URLInput onAdd={this.onAddUrl} key={makeId()}></URLInput>),
+      audioSplitsList: this.state.audioSplitsList.concat({}),
+    });
   }
 
   onAddUrl(url) {
     if (url.length) {
       this.setState({
-        videoUrl: url ,
-        list: this.state.list.concat(<URLInput onAdd={this.onAddUrl} key={makeId()}/>),
+        videoUrl: url,
+        // list: this.state.videosList.concat(<URLInput onAdd={this.onAddUrl} key={makeId()}/>),
       });
-      axios.get('/api/info', { headers: { url } })
-        .then(({ data }) => {
-          this.setState({ video: data });
-        });
+      this.getVideoInfo(url);
     } else {
       console.error('Must be a link!');
     }
   }
 
-  onDownloadButtonClick() {
-    const { videoUrl } = this.state;
-    axios.get('/api/download', { headers: { url: videoUrl } })
+  onAddAudioSplit() {
+    this.setState({
+      audioSplitsList: this.state.audioSplitsList.concat({}),
+    });
+  }
+
+  onSaveAudioSplit() {
+    this.setState({
+      audioSplitsList: this.state.audioSplitsList.concat(<audioSplits />),
+    });
+  }
+
+  onDeleteAudioSplit(index) {
+    const { audioSplitsList } = this.state;
+    audioSplitsList.splice(index, 1);
+    this.setState({ audioSplitsList });
+  }
+
+  getVideoInfo(url) {
+    axios.get('/api/info', { headers: { url } })
       .then(({ data }) => {
+        this.setState({ video: data });
+      });
+  }
+
+  onDownloadButtonClick() {
+    const { fileName, videoUrl, video } = this.state;
+    axios.get('/api/download', {
+      headers: {
+        url: videoUrl,
+        fileName: fileName || video.name,
+      }
+    }).then(({ data }) => {
         console.log(data);
+        // $('#success').show();
       })
       .catch(console.err);
   }
 
+  updateFileName(event) {
+    this.setState({ fileName: event.target.value });
+  }
+
   render() {
-    const { onAddUrl, onDownloadButtonClick } = this;
+    const {
+      onAddUrl,
+      onAddAudioSplit,
+      onDeleteAudioSplit,
+      onDownloadButtonClick,
+      updateFileName,
+    } = this;
     const { video, videoUrl } = this.state;
 
     return (
       <div className="App">
         <header className="App-header">
-          <h1>YT-MP3</h1>
+          <ul>
+            <li className="text-danger"><i className="fab fa-youtube"></i></li>
+            <li><i className="fas fa-angle-double-down"></i></li>
+            <li className="text-warning"><i className="fas fa-music"></i></li>
+            <li className="text-success"><i className="fas fa-music"></i></li>
+            <li className="text-primary"><i className="fas fa-music"></i></li>
+          </ul>
         </header>
-        <main className="container">
+        <main className="App-content container">
+          <h4>Enter URL below</h4>
+          <VideoList list={this.state.videosList} videoUrl={videoUrl} onAddUrl={onAddUrl} onSelectUrl={null} />
           <div className="row">
-            <div className="col-4">
-              <VideoList list={this.state.list} videoUrl={videoUrl} onAddUrl={onAddUrl} onSelectUrl={null} />
-            </div>
-            <div className="col-8">
+            <div className="col-5">
               <VideoCard video={video} />
+            </div>
+            <div className="col-7">
+              <h4>File Name At Download</h4>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Input URL"
+                aria-label="Input URL"
+                aria-describedby="url-input-box"
+                onChange={updateFileName}
+                autoFocus
+              />
+              <AudioSplitList
+                list={this.state.audioSplitsList}
+                onAddSplit={onAddAudioSplit}
+                onDeleteSplit={onDeleteAudioSplit}
+              />
               <DownloadButton onDownload={onDownloadButtonClick}/>
+              <div id="success" className="alert alert-success alert-dismissible fade show" role="alert" style={{display: 'none'}}>
+                Download successful!
+                <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
             </div>
           </div>
         </main>
-
       </div>
     );
   }

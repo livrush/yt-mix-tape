@@ -19,17 +19,18 @@ class URLInput extends Component {
     const { handleChange } = this;
     return (
     <div id="url-input" className="input-group mb-3">
-      <input 
+      <input
         type="text"
-        className="form-control" 
-        placeholder="Input URL" 
-        aria-label="Input URL" 
+        className="form-control"
+        placeholder="Input URL"
+        aria-label="Input URL"
         aria-describedby="url-input-box"
         onChange={handleChange}
+        autoFocus
       />
       <div className="input-group-append">
-        <button 
-          className="btn btn-outline-secondary" 
+        <button
+          className="btn btn-outline-secondary"
           onClick={() => onAdd(url)}
           type="button"
         >
@@ -40,6 +41,6 @@ class URLInput extends Component {
     );
   };
 };
-  
+
 
 export default URLInput;
