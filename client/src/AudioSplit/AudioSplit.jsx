@@ -8,7 +8,10 @@ class AudioSplit extends Component {
   }
 
   handleChange(event, valueType) {
-    this.setState({ [valueType]: event.target.value });
+    const { position, onUpdate } = this.props;
+    this.setState({ [valueType]: event.target.value }, () => {
+      onUpdate(position - 1, this.state);
+    });
   }
 
   buttonRight(position, length, onAdd, onDelete) {
@@ -36,7 +39,16 @@ class AudioSplit extends Component {
   }
 
   render() {
-    const { position, length, onAdd, onDelete } = this.props;
+    const {
+      position,
+      length,
+      onAdd,
+      onUpdate,
+      onDelete,
+      start,
+      end,
+      title,
+    } = this.props;
     const { url } = this.state;
     const { handleChange } = this;
     return (
@@ -55,7 +67,8 @@ class AudioSplit extends Component {
         placeholder="Start time"
         aria-label="Start time"
         aria-describedby="url-input-box"
-        onChange={(event) => handleChange(event, 'start')}
+        onChange={(event) => onUpdate(position - 1, 'start', event.target.value)}
+        value={start}
       />
       <input
         type="text"
@@ -63,7 +76,8 @@ class AudioSplit extends Component {
         placeholder="End time"
         aria-label="End time"
         aria-describedby="url-input-box"
-        onChange={(event) => handleChange(event, 'end')}
+        onChange={(event) => onUpdate(position - 1, 'end', event.target.value)}
+        value={end}
       />
       <input
         type="text"
@@ -71,17 +85,9 @@ class AudioSplit extends Component {
         placeholder="Track title"
         aria-label="Track title"
         aria-describedby="url-input-box"
-        onChange={(event) => handleChange(event, 'title')}
+        onChange={(event) => onUpdate(position - 1, 'title', event.target.value)}
+        value={title}
       />
-      <div className="input-group-append">
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => onAdd(url)}
-          type="button"
-        >
-          Save
-        </button>
-      </div>
       <div className="input-group-append">
         {this.buttonRight(position, length, onAdd, onDelete)}
       </div>

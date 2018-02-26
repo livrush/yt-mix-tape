@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 // import ReactDOM from 'react-dom';
 import './App.css';
+import _ from 'lodash';
 import URLInput from './URLInput/URLInput';
 import VideoList from './VideoList/VideoList';
 import VideoCard from './VideoCard/VideoCard';
@@ -25,6 +26,7 @@ class App extends Component {
     this.updateFileName = this.updateFileName.bind(this);
     this.getVideoInfo = this.getVideoInfo.bind(this);
     this.onAddAudioSplit = this.onAddAudioSplit.bind(this);
+    this.onUpdateAudioSplit = this.onUpdateAudioSplit.bind(this);
     this.onDeleteAudioSplit = this.onDeleteAudioSplit.bind(this);
   }
 
@@ -53,9 +55,14 @@ class App extends Component {
     });
   }
 
-  onSaveAudioSplit() {
+  onUpdateAudioSplit(index, key, value) {
+    console.log(index, key, value);
+    const { audioSplitsList } = this.state;
+    console.log(audioSplitsList);
+    audioSplitsList[index][key] = value;
+    console.log(audioSplitsList);
     this.setState({
-      audioSplitsList: this.state.audioSplitsList.concat(<audioSplits />),
+      audioSplitsList,
     });
   }
 
@@ -73,12 +80,20 @@ class App extends Component {
   }
 
   onDownloadButtonClick() {
-    const { fileName, videoUrl, video } = this.state;
+    const {
+      fileName,
+      videoUrl,
+      audioSplitsList,
+    } = this.state;
+
+    const headers = {
+      url: videoUrl,
+      filename: fileName || 'video',
+      splits: audioSplitsList,
+    };
+
     axios.get('/api/download', {
-      headers: {
-        url: videoUrl,
-        fileName: fileName || video.name,
-      }
+      headers,
     }).then(({ data }) => {
         console.log(data);
         // $('#success').show();
@@ -94,6 +109,7 @@ class App extends Component {
     const {
       onAddUrl,
       onAddAudioSplit,
+      onUpdateAudioSplit,
       onDeleteAudioSplit,
       onDownloadButtonClick,
       updateFileName,
@@ -127,11 +143,11 @@ class App extends Component {
                 aria-label="Input URL"
                 aria-describedby="url-input-box"
                 onChange={updateFileName}
-                autoFocus
               />
               <AudioSplitList
                 list={this.state.audioSplitsList}
                 onAddSplit={onAddAudioSplit}
+                onUpdateSplit={onUpdateAudioSplit}
                 onDeleteSplit={onDeleteAudioSplit}
               />
               <DownloadButton onDownload={onDownloadButtonClick}/>
